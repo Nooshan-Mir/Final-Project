@@ -1,0 +1,208 @@
+#!/bin/sh -l
+
+#SBATCH --nodes=1                 ##number of requested nodes (a node is a group of CPUs)
+#SBATCH -n 12		           ##number of requested CPUs
+#SBATCH --time=04:00:00             ##time requested
+#SBATCH --job-name soil_pipeline3    ##name of job
+#SBATCH -A microbiome                 ##name of the queue you are using.
+
+#########################################################################
+
+echo "Start time"
+date +"%d %B %Y %H:%M:%S"
+
+#step 1, cd into the proper directory. This directory must already exist
+
+cd $RCAC_SCRATCH
+cd qiime/qiime2-atacama-tutorial
+
+pwd
+
+#step 2, Load Modules
+
+echo "loading bioinfo"
+module load bioinfo
+
+echo "loading qiime2-2023.9"
+module load Qiime/2-2023.9
+
+#step 3, Run the code you want
+
+echo "initiating qiime2 pipeline"
+
+#Calculate diversity metrics. You will need to designate a --p-sampling-depth. You will want to consult the rarifaction output to help you make a decision.
+#qiime diversity core-metrics-phylogenetic \
+#  --i-phylogeny rooted-tree.qza \
+#  --i-table table.qza \
+#  --p-sampling-depth 717 \
+#  --m-metadata-file sample-metadata.tsv \
+#  --output-dir core-metrics-results
+
+qiime diversity alpha \
+  --i-table table.qza \
+  --p-metric chao1 \
+  --o-alpha-diversity core-metrics-results/chao1_vector.qza
+
+#Statistical testing
+
+qiime diversity alpha-group-significance \
+  --i-alpha-diversity core-metrics-results/faith_pd_vector.qza \
+  --m-metadata-file sample-metadata.tsv \
+  --o-visualization core-metrics-results/faith-pd-group-significance.qzv
+
+qiime diversity alpha-group-significance \
+  --i-alpha-diversity core-metrics-results/evenness_vector.qza \
+  --m-metadata-file sample-metadata.tsv \
+  --o-visualization core-metrics-results/evenness-group-significance.qzv
+
+qiime diversity alpha-group-significance \
+  --i-alpha-diversity core-metrics-results/shannon_vector.qza \
+  --m-metadata-file sample-metadata.tsv \
+  --o-visualization core-metrics-results/shannon-group-significance.qzv
+
+qiime diversity alpha-group-significance \
+  --i-alpha-diversity core-metrics-results/observed_features_vector.qza \
+  --m-metadata-file sample-metadata.tsv \
+  --o-visualization core-metrics-results/observed_features-group-significance.qzv
+
+qiime diversity alpha-group-significance \
+  --i-alpha-diversity core-metrics-results/chao1_vector.qza \
+  --m-metadata-file sample-metadata.tsv \
+  --o-visualization core-metrics-results/chao1-group-significance.qzv
+
+#PERMANOVA. This section must be editted on the 4th line: --m-metadata-column, replace body-site with your desired metadata column
+qiime diversity beta-group-significance \
+  --i-distance-matrix core-metrics-results/unweighted_unifrac_distance_matrix.qza \
+  --m-metadata-file sample-metadata.tsv \
+  --m-metadata-column average-soil-relative-humidity \
+  --o-visualization core-metrics-results/unweighted-unifrac-average-soil-relative-humidity-significance.qzv \
+  --p-pairwise
+
+#PERMDISP. This section must be editted on the 4th line: --m-metadata-column, replace body-site with your desired metadata column
+qiime diversity beta-group-significance \
+  --i-distance-matrix core-metrics-results/unweighted_unifrac_distance_matrix.qza \
+  --m-metadata-file sample-metadata.tsv \
+  --m-metadata-column average-soil-relative-humidity \
+  --p-method 'permdisp' \
+  --o-visualization core-metrics-results/unweighted-unifrac-average-soil-relative-humidity-permdisp.qzv \
+  --p-pairwise
+
+#PERMANOVA. This section must be editted on the 4th line: --m-metadata-column, replace subject with your desired metadata column
+qiime diversity beta-group-significance \
+  --i-distance-matrix core-metrics-results/unweighted_unifrac_distance_matrix.qza \
+  --m-metadata-file sample-metadata.tsv \
+  --m-metadata-column temperature-soil-high \
+  --o-visualization core-metrics-results/unweighted-unifrac-temperature-soil-high-group-significance.qzv \
+  --p-pairwise
+
+#PERMDISP. This section must be editted on the 4th line: --m-metadata-column, replace subject with your desired metadata column
+qiime diversity beta-group-significance \
+  --i-distance-matrix core-metrics-results/unweighted_unifrac_distance_matrix.qza \
+  --m-metadata-file sample-metadata.tsv \
+  --m-metadata-column temperature-soil-high \
+  --p-method 'permdisp' \
+  --o-visualization core-metrics-results/unweighted-unifrac-temperature-soil-high-permdisp.qzv \
+  --p-pairwise
+
+#PERMANOVA. This section must be editted on the 4th line: --m-metadata-column, replace subject with yo$
+qiime diversity beta-group-significance \
+  --i-distance-matrix core-metrics-results/unweighted_unifrac_distance_matrix.qza \
+  --m-metadata-file sample-metadata.tsv \
+  --m-metadata-column ec \
+  --o-visualization core-metrics-results/unweighted-unifrac-ec-group-significance.$
+  --p-pairwise
+
+#PERMDISP. This section must be editted on the 4th line: --m-metadata-column, replace subject with you$
+qiime diversity beta-group-significance \
+  --i-distance-matrix core-metrics-results/unweighted_unifrac_distance_matrix.qza \
+  --m-metadata-file sample-metadata.tsv \
+  --m-metadata-column ec \
+  --p-method 'permdisp' \
+  --o-visualization core-metrics-results/unweighted-unifrac-ec-permdisp.qzv \
+  --p-pairwise
+
+
+#PERMANOVA. This section must be editted on the 4th line: --m-metadata-column, replace subject with yo$
+qiime diversity beta-group-significance \
+  --i-distance-matrix core-metrics-results/unweighted_unifrac_distance_matrix.qza \
+  --m-metadata-file sample-metadata.tsv \
+  --m-metadata-column ph \
+  --o-visualization core-metrics-results/unweighted-unifrac-ph-group-significance.$
+  --p-pairwise
+
+#PERMDISP. This section must be editted on the 4th line: --m-metadata-column, replace subject with you$
+qiime diversity beta-group-significance \
+  --i-distance-matrix core-metrics-results/unweighted_unifrac_distance_matrix.qza \
+  --m-metadata-file sample-metadata.tsv \
+  --m-metadata-column ph \
+  --p-method 'permdisp' \
+  --o-visualization core-metrics-results/unweighted-unifrac-ph-permdisp.qzv \
+  --p-pairwise
+
+qiime diversity alpha \
+  --i-table table.qza \
+  --p-metric faith_pd \
+  --o-alpha-diversity faith_pd_vector.qza
+
+qiime diversity alpha-correlation \
+  --i-alpha-diversity faith_pd_vector.qza \
+  --m-metadata-file sample_metadata.tsv \
+  --o-visualization faith_pd_correlation.qzv
+
+qiime diversity alpha \
+  --i-table table.qza \
+  --p-metric evenness \
+  --o-alpha-diversity evenness_vector.qza
+
+qiime diversity alpha-correlation \
+  --i-alpha-diversity evenness_vector.qza \
+  --m-metadata-file sample_metadata.tsv \
+  --o-visualization evenness_correlation.qzv
+
+qiime diversity alpha \
+  --i-table table.qza \
+  --p-metric shannon \
+  --o-alpha-diversity shannon_vector.qza
+
+qiime diversity alpha-correlation \
+  --i-alpha-diversity shannon_vector.qza \
+  --m-metadata-file sample_metadata.tsv \
+  --o-visualization shannon_correlation.qzv
+
+qiime diversity alpha \
+  --i-table table.qza \
+  --p-metric observed_features \
+  --o-alpha-diversity observed_features_vector.qza
+
+qiime diversity alpha-correlation \
+  --i-alpha-diversity observed_features_vector.qza \
+  --m-metadata-file sample_metadata.tsv \
+  --o-visualization observed_features_correlation.qzv
+
+
+#Move this section to  atacama-pipeline-step2.slurm
+################################################
+#echo "Classify and get .qzv"
+#qiime feature-classifier classify-sklearn \
+#  --i-classifier gg-13-8-99-515-806-nb-classifier.qza \
+#  --i-reads rep-seqs.qza \
+#  --o-classification taxonomy.qza
+
+#qiime metadata tabulate \
+#  --m-input-file taxonomy.qza \
+#  --o-visualization taxonomy.qzv
+
+
+#echo "Make a stacked barplot"
+#qiime taxa barplot \
+#  --i-table table.qza \
+#  --i-taxonomy taxonomy.qza \
+#  --m-metadata-file sample-metadata.tsv \
+#  --o-visualization taxa-bar-plots.qzv
+#####################################################
+
+
+echo "End time"
+date +"%d %B %Y %H:%M:%S"
+
+#to run: sbatch atacama_pipeline.slurm
